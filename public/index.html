@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>🎵 Song Data Analyzer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #1db954, #1ed760);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
+
+    .auth-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .auth-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .status-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff4444;
+    }
+
+    .status-indicator.connected {
+      background: #1db954;
+      box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(29, 185, 84, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn.secondary {
+      background: linear-gradient(135deg, #535353 0%, #727272 100%);
+    }
+
+    .btn.danger {
+      background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      .auth-status {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    .input-section,
+    .current-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    input[type="text"],
+    input[type="url"] {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="url"]:focus {
+      outline: none;
+      border-color: #1db954;
+      box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.2);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .current-track {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .track-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .track-details h4 {
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+
+    .track-details p {
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #1db954;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .results {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      margin-top: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: none;
+    }
+
+    .results.success {
+      border-color: rgba(29, 185, 84, 0.5);
+      background: rgba(29, 185, 84, 0.1);
+    }
+
+    .results.error {
+      border-color: rgba(255, 68, 68, 0.5);
+      background: rgba(255, 68, 68, 0.1);
+    }
+
+    .track-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .album-art {
+      width: 120px;
+      height: 120px;
+      border-radius: 15px;
+      object-fit: cover;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .track-meta h2 {
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+    }
+
+    .track-meta p {
+      opacity: 0.8;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .spotify-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #1db954;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .spotify-link:hover {
+      color: #1ed760;
+      transform: translateX(5px);
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .data-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .data-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .data-card .value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #1db954;
+      margin-bottom: 5px;
+    }
+
+    .data-card .label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .technical-data {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 25px;
+      margin-top: 20px;
+    }
+
+    .technical-data h4 {
+      margin-bottom: 15px;
+      color: #1db954;
+      font-size: 1.2rem;
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
+    .tech-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tech-item:last-child {
+      border-bottom: none;
+    }
+
+    .tech-label {
+      font-weight: 600;
+      opacity: 0.8;
+    }
+
+    .tech-value {
+      color: #1db954;
+      font-weight: bold;
+    }
+
+    .recommended-tracks {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    .recommended-track {
+      display: flex;
+      gap: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .recommended-track:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      border-color: rgba(29, 185, 84, 0.3);
+    }
+
+    .mini-album-art {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .recommended-track .track-details {
+      flex: 1;
+    }
+
+    .recommended-track h5 {
+      font-size: 1.1rem;
+      margin: 0 0 5px 0;
+    }
+
+    .recommended-track p {
+      opacity: 0.8;
+      margin: 0 0 8px 0;
+      font-size: 0.9rem;
+    }
+
+    .track-attributes {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .attribute {
+      background: rgba(29, 185, 84, 0.1);
+      color: #1db954;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .track-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .track-buttons .btn.small {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .error-message {
+      background: rgba(255, 68, 68, 0.2);
+      border: 1px solid rgba(255, 68, 68, 0.5);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;  
+    }
+
+    .success-message {
+      background: rgba(29, 185, 84, 0.2);
+      border: 1px solid rgba(29, 185, 84, 0.5);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .tunebat-link {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    .disabled-overlay {
+      opacity: 0.5;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .disabled-overlay::after {
+      content: "🔒 Login to Spotify to use this feature";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Switch styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-left: 10px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+    }
+
+    input:checked + .slider {
+      background-color: #1db954;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .auto-update-section {
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .switch-label {
+      font-size: 0.9rem;
+      color: #fff;
+      margin-left: 10px;
+    }
+
+    /* Player styles */
+    .player-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .player-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .seek-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .seek-bar {
+      flex: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .seek-bar::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: #1db954;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .seek-bar::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .time-display {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      min-width: 45px;
+    }
+
+    .main-controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 10px;
+      border-radius: 50%;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.1);
+    }
+
+    #playPauseBtn {
+      font-size: 2rem;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .volume-slider {
+      flex: 1;
+      max-width: 100px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: #1db954;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Auto Features section styles */
+    .auto-features-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .feature-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    .feature-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .auto-add-options {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+
+    .range-label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 100%;
+    }
+
+    .range-label input[type="range"] {
+      width: 100%;
+    }
+
+    /* Existing styles... */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎵 Song Data Analyzer</h1>
+      <p>Analyze any song with Spotify integration and tunebat.com data</p>
+    </div>
+
+    <!-- Authentication Section -->
+    <div class="auth-section">
+      <div class="auth-status">
+        <div class="status-info">
+          <div class="status-indicator" id="statusIndicator"></div>
+          <span id="authStatus">Checking authentication...</span>
+        </div>
+        <div>
+          <button
+            class="btn"
+            id="loginBtn"
+            onclick="loginToSpotify()"
+            style="display: none;"
+          >
+            🎵 Login with Spotify
+          </button>
+          <button
+            class="btn danger"
+            id="logoutBtn"
+            onclick="logout()"
+            style="display: none;"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Manual Input Section -->
+      <div class="input-section" id="manualSection">
+        <h3 class="section-title">🔗 Analyze by Link/ID</h3>
+        <form id="manualForm">
+          <div class="form-group">
+            <label for="spotifyInput">Spotify Link or Track ID:</label>
+            <input
+              type="text"
+              id="spotifyInput"
+              placeholder="https://open.spotify.com/track/... or track ID"
+              required
+            />
+          </div>
+          <button type="submit" class="btn" id="analyzeBtn">
+            🔍 Analyze Track
+          </button>
+        </form>
+      </div>
+
+      <!-- Currently Playing Section -->
+      <div class="current-section" id="currentSection">
+        <h3 class="section-title">🎧 Currently Playing</h3>
+        <div id="currentTrackInfo">
+          <p style="opacity: 0.7;">No track information available</p>
+        </div>
+        <button
+          class="btn"
+          id="refreshCurrentBtn"
+          onclick="refreshCurrentlyPlaying()"
+        >
+          🔄 Refresh
+        </button>
+        <button
+          class="btn"
+          id="analyzeCurrentBtn"
+          onclick="analyzeCurrentTrack()"
+          style="display: none; margin-left: 10px;"
+        >
+          🔍 Analyze Current
+        </button>
+      </div>
+    </div>
+
+    <!-- Player Section -->
+    <div class="player-section">
+      <div class="player-controls">
+        <div class="seek-bar-container">
+          <div class="time-display current-time">0:00</div>
+          <input type="range" class="seek-bar" min="0" max="100" value="0">
+          <div class="time-display duration">0:00</div>
+        </div>
+        <div class="main-controls">
+          <button class="control-btn" id="previousBtn">⏮️</button>
+          <button class="control-btn" id="playPauseBtn">⏵️</button>
+          <button class="control-btn" id="nextBtn">⏭️</button>
+        </div>
+        <div class="volume-control">
+          <span class="volume-icon">🔊</span>
+          <input type="range" class="volume-slider" min="0" max="100" value="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto Features Section -->
+    <div class="auto-features-section">
+      <div class="feature-row">
+        <label class="switch-label">
+          <span>Auto-update on song change</span>
+          <label class="switch">
+            <input type="checkbox" id="autoUpdateCheckbox" onchange="toggleAutoUpdate(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </label>
+
+        <label class="switch-label">
+          <span>Auto-flash BPM colors</span>
+          <label class="switch">
+            <input type="checkbox" id="autoFlashCheckbox" onchange="toggleAutoFlash(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </label>
+      </div>
+
+      <div class="feature-row">
+        <label class="switch-label">
+          <span>Enable Auto-Add to Playlists</span>
+          <label class="switch">
+            <input type="checkbox" id="masterAutoAdd" onchange="toggleAutoAdd(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </label>
+
+        <div class="auto-add-options" id="autoAddOptions" style="display: none;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddBPM" onchange="updateAutoAddPreferences()">
+            <span>BPM</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddKey" onchange="updateAutoAddPreferences()">
+            <span>Key</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddCamelot" onchange="updateAutoAddPreferences()">
+            <span>Camelot</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddEnergy" onchange="updateAutoAddPreferences()">
+            <span>Energy</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddDanceability" onchange="updateAutoAddPreferences()">
+            <span>Danceability</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddHappiness" onchange="updateAutoAddPreferences()">
+            <span>Happiness</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddAcousticness" onchange="updateAutoAddPreferences()">
+            <span>Acousticness</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddInstrumentalness" onchange="updateAutoAddPreferences()">
+            <span>Instrumentalness</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddLiveness" onchange="updateAutoAddPreferences()">
+            <span>Liveness</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoAddSpeechiness" onchange="updateAutoAddPreferences()">
+            <span>Speechiness</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="feature-row">
+        <label class="range-label">
+          <span>Color randomization</span>
+          <input type="range" id="colorRandomization" min="0" max="100" value="0">
+        </label>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p id="loadingText">Analyzing track...</p>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results" id="results"></div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // Global state variables
+    let currentTrack = null;
+    let autoUpdateEnabled = false;
+    let autoUpdateInterval = null;
+    let lastAnalyzedTrackId = null;
+    let isPlaylistOperationInProgress = false;
+    let isAuthenticated = false;
+
+    // Player state
+    let playerState = {
+      isPlaying: false,
+      currentTime: 0,
+      duration: 0,
+      volume: 100,
+      colors: [],
+      autoFlash: false,
+      flashInterval: null,
+      updateInterval: null,
+      masterAutoAdd: false,
+      autoAddPreferences: {
+        bpm: false,
+        key: false,
+        camelot: false,
+        energy: false,
+        danceability: false,
+        happiness: false,
+        acousticness: false,
+        instrumentalness: false,
+        liveness: false,
+        speechiness: false
+      }
+    };
+
+    // Logging utility
+    function log(component, action, details) {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] [${component}] ${action}:`, details);
+    }
+
+    // Update interval with random delay
+    function getRandomUpdateDelay() {
+      return 6984 + Math.floor(Math.random() * (1685 - 50 + 1) + 50);
+    }
+
+    // Extract colors from album art
+    async function extractColors(imageUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          const cellWidth = img.width / 8;
+          const cellHeight = img.height / 8;
+          const colors = new Set();
+
+          for(let x = 0; x < 8; x++) {
+            for(let y = 0; y < 8; y++) {
+              const data = ctx.getImageData(x * cellWidth, y * cellHeight, 1, 1).data;
+              const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
+              colors.add(color);
+            }
+          }
+
+          resolve(Array.from(colors));
+        };
+        img.src = imageUrl;
+      });
+    }
+
+    // Handle color flashing
+    function toggleAutoFlash(enabled) {
+      playerState.autoFlash = enabled;
+      if (enabled && currentTrack?.album_art) {
+        startColorFlash();
+      } else {
+        stopColorFlash();
+      }
+    }
+
+    let lastColor = null;
+    function startColorFlash() {
+      if (playerState.flashInterval) {
+        clearInterval(playerState.flashInterval);
+      }
+
+      const randomness = document.getElementById('colorRandomization').value / 100;
+      playerState.flashInterval = setInterval(() => {
+        if (playerState.colors.length < 2) return;
+
+        let availableColors = playerState.colors.filter(c => c !== lastColor);
+        const randomIndex = Math.floor(Math.random() * availableColors.length * randomness);
+        const color = availableColors[randomIndex] || availableColors[0];
+        lastColor = color;
+        document.body.style.backgroundColor = color;
+      }, currentTrack?.bpm ? (60000 / currentTrack.bpm) : 500);
+    }
+
+    function stopColorFlash() {
+      if (playerState.flashInterval) {
+        clearInterval(playerState.flashInterval);
+        playerState.flashInterval = null;
+      }
+      document.body.style.backgroundColor = '';
+    }
+
+    // Toggle master auto-add
+    function toggleAutoAdd(enabled) {
+      log('AutoAdd', 'Toggle master switch', { enabled });
+      playerState.masterAutoAdd = enabled;
+      document.getElementById('autoAddOptions').style.display = enabled ? 'block' : 'none';
+      
+      if (!enabled) {
+        // Clear all individual preferences when master is disabled
+        Object.keys(playerState.autoAddPreferences).forEach(key => {
+          document.getElementById(`autoAdd${key.charAt(0).toUpperCase() + key.slice(1)}`).checked = false;
+        });
+        updateAutoAddPreferences();
+      }
+    }
+
+    // Update auto-add preferences
+    function updateAutoAddPreferences() {
+      const previousPrefs = { ...playerState.autoAddPreferences };
+      
+      playerState.autoAddPreferences = {
+        bpm: document.getElementById('autoAddBPM').checked,
+        key: document.getElementById('autoAddKey').checked,
+        camelot: document.getElementById('autoAddCamelot').checked,
+        energy: document.getElementById('autoAddEnergy').checked,
+        danceability: document.getElementById('autoAddDanceability').checked,
+        happiness: document.getElementById('autoAddHappiness').checked,
+        acousticness: document.getElementById('autoAddAcousticness').checked,
+        instrumentalness: document.getElementById('autoAddInstrumentalness').checked,
+        liveness: document.getElementById('autoAddLiveness').checked,
+        speechiness: document.getElementById('autoAddSpeechiness').checked
+      };
+
+      log('AutoAdd', 'Preferences updated', {
+        previous: previousPrefs,
+        current: playerState.autoAddPreferences
+      });
+    }
+
+    // Player controls
+    function updatePlayerControls() {
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      playPauseBtn.textContent = playerState.isPlaying ? '⏸️' : '⏵️';
+    }
+
+    async function togglePlayPause() {
+      try {
+        const response = await fetch('https://api.spotify.com/v1/me/player/' + 
+          (playerState.isPlaying ? 'pause' : 'play'), {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + getCookie('access_token') }
+        });
+        
+        if (response.ok) {
+          playerState.isPlaying = !playerState.isPlaying;
+          updatePlayerControls();
+        }
+      } catch (error) {
+        console.error('Error toggling playback:', error);
+      }
+    }
+
+    async function skipTrack(direction) {
+      try {
+        const response = await fetch(
+          `https://api.spotify.com/v1/me/player/${direction}`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + getCookie('access_token') }
+        });
+        
+        if (response.ok) {
+          await refreshCurrentlyPlaying();
+        }
+      } catch (error) {
+        console.error('Error skipping track:', error);
+      }
+    }
+
+    // Update UI based on auth status
+    function updateAuthUI(authenticated) {
+      isAuthenticated = authenticated;
+      const statusIndicator = document.getElementById('statusIndicator');
+      const authStatus = document.getElementById('authStatus');
+      const loginBtn = document.getElementById('loginBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (authenticated) {
+        statusIndicator.classList.add('connected');
+        authStatus.textContent = 'Connected to Spotify';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+        document.getElementById('manualSection').classList.remove('disabled-overlay');
+      } else {
+        statusIndicator.classList.remove('connected');
+        authStatus.textContent = 'Not connected to Spotify';
+        loginBtn.style.display = 'block';
+        logoutBtn.style.display = 'none';
+        document.getElementById('manualSection').classList.add('disabled-overlay');
+      }
+    }
+
+    // Check auth status on page load
+    async function checkAuthStatus() {
+      try {
+        const response = await fetch('/api/auth-status');
+        const data = await response.json();
+        updateAuthUI(data.authenticated);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        updateAuthUI(false);
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuthStatus();
+      document.getElementById('manualForm').addEventListener('submit', handleManualSubmit);
+
+      // Player controls
+      document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+      document.getElementById('previousBtn').addEventListener('click', () => skipTrack('previous'));
+      document.getElementById('nextBtn').addEventListener('click', () => skipTrack('next'));
+      
+      // Auto-features
+      document.getElementById('colorRandomization').addEventListener('input', () => {
+        if (playerState.autoFlash) {
+          startColorFlash();
+        }
+      });
+    });
+
+    // Login to Spotify
+    function loginToSpotify() {
+      window.location.href = '/login';
+    }
+
+    // Logout from Spotify
+    async function logout() {
+      try {
+        await fetch('/api/logout', { method: 'POST' });
+        updateAuthUI(false);
+        showMessage('Successfully logged out', 'info');
+      } catch (error) {
+        console.error('Error logging out:', error);
+        showMessage('Failed to logout', 'error');
+      }
+    }
+
+    // Refresh currently playing track
+    async function refreshCurrentlyPlaying() {
+      if (!isAuthenticated) return false;
+
+      try {
+        const response = await fetch('/api/currently-playing');
+        const data = await response.json();
+
+        if (data.playing && data.track) {
+          const oldTrackId = currentTrack?.id;
+          currentTrack = data.track;
+          displayCurrentTrack(data.track);
+          return oldTrackId !== currentTrack.id;
+        } else {
+          currentTrack = null;
+          document.getElementById('currentTrackInfo').innerHTML =
+            `<p style="opacity: 0.7;">${data.message || 'No track currently playing'}</p>`;
+          document.getElementById('analyzeCurrentBtn').style.display = 'none';
+          return false;
+        }
+      } catch (error) {
+        console.error('Error fetching currently playing:', error);
+        document.getElementById('currentTrackInfo').innerHTML =
+          '<p style="opacity: 0.7; color: #ff4444;">Error fetching current track</p>';
+        return false;
+      }
+    }
+
+    // Display current track info
+    function displayCurrentTrack(track) {
+      const html = `
+        <div class="current-track">
+          <div class="track-info">
+            <div class="track-details">
+              <h4>${escapeHtml(track.name)}</h4>
+              <p>by ${escapeHtml(track.artists.join(', '))}</p>
+              <p style="font-size: 0.8rem; opacity: 0.6;">Album: ${escapeHtml(
+                track.album
+              )}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('currentTrackInfo').innerHTML = html;
+      document.getElementById('analyzeCurrentBtn').style.display =
+        'inline-block';
+    }
+
+    // Handle manual form submission
+    async function handleManualSubmit(e) {
+      e.preventDefault();
+
+      if (!isAuthenticated) {
+        showMessage('Please login to Spotify first', 'error');
+        return;
+      }
+
+      const input = document.getElementById('spotifyInput').value.trim();
+      if (!input) {
+        showMessage('Please enter a Spotify link or track ID', 'error');
+        return;
+      }
+
+      await analyzeTrack(input, 'manual');
+    }
+
+    // Analyze current track
+    async function analyzeCurrentTrack() {
+      if (!currentTrack) {
+        showMessage('No current track available', 'error');
+        return;
+      }
+
+      await analyzeTrack(null, 'current');
+    }
+
+    // Main analyze function
+    async function analyzeTrack(input, mode) {
+      log('Analysis', 'Starting track analysis', { input, mode });
+      showLoading(true, 'Analyzing track data...');
+
+      try {
+        const requestBody = { mode };
+        if (mode === 'manual') {
+          requestBody.input = input;
+        }
+
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const result = await response.json();
+        log('Analysis', 'Analysis complete', result);
+        
+        displayResults(result);
+
+        // Auto-add to playlists if enabled and analysis was successful
+        if (result.success && result.tunebat && result.spotify) {
+          const trackData = {
+            id: result.spotify.id,
+            ...result.tunebat
+          };
+          await handleAutoAdd(trackData);
+        }
+      } catch (error) {
+        log('Analysis', 'Error during analysis', error);
+        displayResults({
+          success: false,
+          error: 'Network error: ' + error.message
+        });
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Display analysis results
+    function displayResults(result) {
+      let html = '';
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.style.display = 'block';
+
+      if (result.success && result.spotify && result.tunebat) {
+        resultsDiv.className = 'results success';
+        const spotify = result.spotify;
+        const tunebat = result.tunebat;
+
+        // Extract colors if album art exists and auto-flash is enabled
+        if (tunebat.albumArt && playerState.autoFlash) {
+          extractColors(tunebat.albumArt).then(colors => {
+            playerState.colors = colors;
+            if (playerState.autoFlash) {
+              startColorFlash();
+            }
+          });
+        }
+
+        html = `
+          <h3>✅ Analysis Complete!</h3>
+          <div class="track-header">
+            ${tunebat.albumArt ? `<img src="${tunebat.albumArt}" alt="Album art" class="album-art">` : ''}
+            <div class="track-meta">
+              <h2>${escapeHtml(spotify.name)}</h2>
+              <p>by ${escapeHtml(spotify.artists.join(', '))}</p>
+              <p style="font-size: 0.9rem;">Album: ${escapeHtml(spotify.album)}</p>
+              ${spotify.external_urls && spotify.external_urls.spotify
+                ? `<a href="${spotify.external_urls.spotify}" target="_blank" class="spotify-link">🎵 Open in Spotify →</a>`
+                : ''}
+            </div>
+          </div>
+          <div class="data-grid">
+        `;        
+
+        // Add all musical attributes with playlist buttons
+        const attributes = [
+          { value: tunebat.bpm, label: 'BPM', prefix: '~', suffix: 'BPM Manual' },
+          { value: tunebat.key, label: 'Key', suffix: 'Key' },
+          { value: tunebat.camelot, label: 'Camelot', suffix: 'Camelot' },
+          { value: tunebat.energy, label: 'Energy', prefix: '~', suffix: 'Energy' },
+          { value: tunebat.danceability, label: 'Danceability', prefix: '~', suffix: 'Danceability' },
+          { value: tunebat.happiness, label: 'Happiness', prefix: '~', suffix: 'Happiness' },
+          { value: tunebat.acousticness, label: 'Acousticness', prefix: '~', suffix: 'Acousticness' },
+          { value: tunebat.instrumentalness, label: 'Instrumentalness', prefix: '~', suffix: 'Instrumentalness' },
+          { value: tunebat.liveness, label: 'Liveness', prefix: '~', suffix: 'Liveness' },
+          { value: tunebat.speechiness, label: 'Speechiness', prefix: '~', suffix: 'Speechiness' }
+        ];
+
+        attributes.forEach(attr => {
+          if (attr.value != null) {
+            const playlistName = `${attr.prefix || ''}${attr.value} ${attr.suffix}`;
+            html += `
+              <div class="data-card">
+                <div class="value">${attr.value}</div>
+                <div class="label">${attr.label}</div>
+                <button class="btn secondary small" onclick="addToPlaylist('${playlistName}', '${spotify.id}')">
+                  Add to ${playlistName}
+                </button>
+              </div>`;
+          }
+        });
+
+        html += `</div>`;
+
+        // Technical data
+        const technicalData = [];
+        if (tunebat.popularity)       technicalData.push(['Popularity', tunebat.popularity]);
+        if (tunebat.happiness)        technicalData.push(['Happiness', tunebat.happiness]);
+        if (tunebat.acousticness)     technicalData.push(['Acousticness', tunebat.acousticness]);
+        if (tunebat.instrumentalness) technicalData.push(['Instrumentalness', tunebat.instrumentalness]);
+        if (tunebat.liveness)         technicalData.push(['Liveness', tunebat.liveness]);
+        if (tunebat.speechiness)      technicalData.push(['Speechiness', tunebat.speechiness]);
+        if (tunebat.loudness)         technicalData.push(['Loudness', tunebat.loudness + ' dB']);
+        if (tunebat.explicit)         technicalData.push(['Explicit', tunebat.explicit ? 'Yes' : 'No']);
+        if (tunebat.releaseDate)      technicalData.push(['Release Date', tunebat.releaseDate]);
+
+        if (technicalData.length) {
+          html += `
+            <div class="technical-data">
+              <h4>📊 Technical Analysis</h4>
+              <div class="tech-grid">
+          `;
+          technicalData.forEach(([label, value]) => {
+            html += `
+              <div class="tech-item">
+                <span class="tech-label">${label}:</span>
+                <span class="tech-value">${escapeHtml(value.toString())}</span>
+              </div>
+            `;
+          });
+          html += `</div></div>`;
+        }
+
+        // Recommended Tracks Section
+        if (tunebat.recommendations && tunebat.recommendations.length > 0) {
+          html += `
+            <div class="technical-data">
+              <h4>🎵 Recommended Similar Tracks</h4>
+              <div class="recommended-tracks">
+          `;
+          tunebat.recommendations.forEach(track => {
+            html += `
+              <div class="recommended-track">
+                ${track.albumArt ? `<img src="${track.albumArt}" alt="Album art" class="mini-album-art">` : ''}
+                <div class="track-details">
+                  <h5>${escapeHtml(track.title)}</h5>
+                  <p>by ${escapeHtml(track.artist)}</p>
+                  <div class="track-attributes">
+                    ${track.key ? `<span class="attribute">Key: ${track.key}</span>` : ''}
+                    ${track.bpm ? `<span class="attribute">BPM: ${track.bpm}</span>` : ''}
+                    ${track.camelot ? `<span class="attribute">Camelot: ${track.camelot}</span>` : ''}
+                  </div>
+                  <div class="track-buttons">
+                    <button class="btn secondary small" onclick="addToPlaylist('All Similar Tracks', '${track.spotifyId}')">
+                      Add to Similar Tracks
+                    </button>
+                    ${track.bpm ? `
+                      <button class="btn secondary small" onclick="addToPlaylist('~${track.bpm} BPM Manual', '${track.spotifyId}')">
+                        Add to ~${track.bpm} BPM
+                      </button>
+                    ` : ''}
+                    ${track.key ? `
+                      <button class="btn secondary small" onclick="addToPlaylist('${track.key} Key', '${track.spotifyId}')">
+                        Add to ${track.key} Key
+                      </button>
+                    ` : ''}
+                    ${track.camelot ? `
+                      <button class="btn secondary small" onclick="addToPlaylist('${track.camelot} Camelot', '${track.spotifyId}')">
+                        Add to ${track.camelot} Camelot
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          html += `</div></div>`;
+        }
+
+        // Tunebat source link
+        if (result.tunebatUrl) {
+          html += `
+            <div class="tunebat-link">
+              <strong>Source:</strong>
+              <a href="${result.tunebatUrl}" target="_blank">${result.tunebatUrl}</a>
+            </div>
+          `;
+        }
+
+      } else {
+        resultsDiv.className = 'results error';
+        html = `
+          <h3>❌ Analysis Failed</h3>
+          <div class="error-message">
+            <strong>Error:</strong> ${escapeHtml(result.error || 'Unknown error')}
+          </div>
+        `;
+        if (result.tunebatUrl) {
+          html += `<p><strong>Attempted URL:</strong> ${result.tunebatUrl}</p>`;
+        }
+        html += `<p><em>This could be due to the song not being on Tunebat, network issues, or site changes.</em></p>`;
+      }
+
+      resultsDiv.innerHTML = html;
+    }
+
+    // Show/hide loading indicator
+    function showLoading(show, text = 'Loading...') {
+      const loading = document.getElementById('loading');
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      const analyzeCurrentBtn = document.getElementById('analyzeCurrentBtn');
+
+      if (show) {
+        loading.style.display = 'block';
+        document.getElementById('loadingText').textContent = text;  
+        analyzeBtn.disabled = true;
+        analyzeCurrentBtn.disabled = true;
+        document.getElementById('results').style.display = 'none';
+      } else {
+        loading.style.display = 'none';
+        analyzeBtn.disabled = false;
+        analyzeCurrentBtn.disabled = false;
+      }
+    }
+
+    // Show message
+    function showMessage(message, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className =
+        type === 'error' ? 'error-message' : 'success-message';
+      messageDiv.textContent = message;
+
+      const container = document.querySelector('.container');
+      container.insertBefore(messageDiv, container.children[1]);
+
+      setTimeout(() => {
+        messageDiv.remove();
+      }, 5000);
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Toggle auto-update
+    async function toggleAutoUpdate(enabled) {
+      if (enabled && !isAuthenticated) {
+        showMessage('Please login to Spotify first', 'error');
+        document.getElementById('autoUpdateCheckbox').checked = false;
+        return;
+      }
+
+      autoUpdateEnabled = enabled;
+      if (enabled) {
+        showMessage('Auto-update enabled. Refreshing track data periodically.', 'success');
+        
+        // Initial refresh and analysis
+        try {
+          const trackChanged = await refreshCurrentlyPlaying();
+          if (currentTrack && (!lastAnalyzedTrackId || currentTrack.id !== lastAnalyzedTrackId)) {
+            await analyzeCurrentTrack();
+            lastAnalyzedTrackId = currentTrack.id;
+            await handleAutoAdd(currentTrack);
+          }
+        } catch (error) {
+          console.error('Error in auto-update:', error);
+          showMessage('Auto-update encountered an error, disabling...', 'error');
+          autoUpdateEnabled = false;
+          document.getElementById('autoUpdateCheckbox').checked = false;
+          return;
+        }
+
+        // Set up interval with random delay
+        function setupInterval() {
+          return setTimeout(async () => {
+            if (!isAuthenticated) {
+              autoUpdateEnabled = false;
+              document.getElementById('autoUpdateCheckbox').checked = false;
+              showMessage('Login expired, auto-update disabled', 'error');
+              return;
+            }
+
+            try {
+              const trackChanged = await refreshCurrentlyPlaying();
+              if (trackChanged && currentTrack) {
+                await analyzeCurrentTrack();
+                lastAnalyzedTrackId = currentTrack.id;
+                await handleAutoAdd(currentTrack);
+              }
+            } catch (error) {
+              console.error('Error in auto-update interval:', error);
+              showMessage('Auto-update encountered an error, will retry...', 'error');
+            }
+
+            // Setup next interval
+            if (autoUpdateEnabled) {
+              autoUpdateInterval = setupInterval();
+            }
+          }, getRandomUpdateDelay());
+        }
+
+        autoUpdateInterval = setupInterval();
+      } else {
+        showMessage('Auto-update disabled.', 'info');
+        if (autoUpdateInterval) {
+          clearTimeout(autoUpdateInterval);
+          autoUpdateInterval = null;
+        }
+      }
+    }
+
+    // Handle auto-add to playlists
+    async function handleAutoAdd(trackData) {
+      if (!playerState.masterAutoAdd) {
+        log('AutoAdd', 'Skipping auto-add (master disabled)');
+        return;
+      }
+
+      log('AutoAdd', 'Processing track', trackData);
+
+      const prefs = playerState.autoAddPreferences;
+      const promises = [];
+
+      const addIfEnabled = (key, value, prefix = '') => {
+        if (prefs[key] && value != null) {
+          const playlistName = `${prefix}${value} ${key.charAt(0).toUpperCase() + key.slice(1)}`;
+          log('AutoAdd', 'Queueing playlist addition', { playlistName, trackId: trackData.id });
+          promises.push(addToPlaylist(playlistName, trackData.id));
+        }
+      };
+
+      try {
+        addIfEnabled('bpm', trackData.bpm, '~');
+        addIfEnabled('key', trackData.key);
+        addIfEnabled('camelot', trackData.camelot);
+        addIfEnabled('energy', trackData.energy, '~');
+        addIfEnabled('danceability', trackData.danceability, '~');
+        addIfEnabled('happiness', trackData.happiness, '~');
+        addIfEnabled('acousticness', trackData.acousticness, '~');
+        addIfEnabled('instrumentalness', trackData.instrumentalness, '~');
+        addIfEnabled('liveness', trackData.liveness, '~');
+        addIfEnabled('speechiness', trackData.speechiness, '~');
+
+        if (promises.length > 0) {
+          log('AutoAdd', 'Starting playlist additions', { count: promises.length });
+          await Promise.all(promises);
+          log('AutoAdd', 'Completed all playlist additions');
+          showMessage(`Added track to ${promises.length} playlists`, 'success');
+        }
+      } catch (error) {
+        log('AutoAdd', 'Error during auto-add', error);
+        showMessage('Error during auto-add to playlists', 'error');
+      }
+    }
+
+    // Add track to playlist
+    async function addToPlaylist(playlistName, trackId) {
+      if (!isAuthenticated) {
+        showMessage('Please login to Spotify first', 'error');
+        return;
+      }
+
+      if (isPlaylistOperationInProgress) {
+        showMessage('Please wait for the current playlist operation to complete', 'error');
+        return;
+      }
+
+      const button = event.target;
+      const originalText = button.textContent;
+      try {
+        isPlaylistOperationInProgress = true;
+        button.disabled = true;
+        button.textContent = 'Adding...';
+
+        const response = await fetch('/api/add-to-playlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ playlistName, trackId })
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          showMessage(`Track added to playlist "${playlistName}"`, 'success');
+        } else {
+          if (result.error && result.error.includes('Insufficient client scope')) {
+            showMessage('Additional permissions needed. Please log out and log in again.', 'error');
+            await logout();
+          } else {
+            throw new Error(result.error || 'Failed to add track to playlist');
+          }
+        }
+      } catch (error) {
+        console.error('Error adding to playlist:', error);
+        if (error.message && error.message.includes('Insufficient client scope')) {
+          showMessage('Additional permissions needed. Please log out and log in again.', 'error');
+          await logout();
+        } else {
+          showMessage(error.message || 'Failed to add track to playlist', 'error');
+        }
+      } finally {
+        isPlaylistOperationInProgress = false;
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+  </script>
+</body>
+</html>
